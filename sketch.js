@@ -1,12 +1,14 @@
 let chaosGame;
 let justOnce;
+let MAX_REJECTIONS=100;
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(600, 600);
   angleMode(DEGREES)
   justOnce = true;
   // chaosGame = sierpinski();
-  chaosGame = ngon(6);
+  // chaosGame = overshoot(5,1.4);
+  chaosGame = ngonNoRepeat(5)
 }
 
 // calculates the perfect packing ratio for regular polygons
@@ -33,12 +35,21 @@ function perfectRatio(n){
 }
 
 // sierpinski triangle
-function sierpinksi(){
-  return new ChaosGame(triangleAnchors(),randomSample,halfway, createVector(width/2,height/2));
+function sierpinski(){
+  return new ChaosGame(triangleAnchors(),randomSample,halfway, createVector(width/2,height/2), 40, [renderTransparent(40)]);
 }
 
 function ngon(n){
-  return new ChaosGame(nGonAnchors(n), randomSample, perfectAction(n), createVector(width/2, height/2));
+  return new ChaosGame(nGonAnchors(n), randomSample, perfectAction(n), createVector(width/2, height/2),10, [renderTransparent(40)]);
+}
+  
+  
+function ngonNoRepeat(n){
+  return new ChaosGame(nGonAnchors(n), randomSampleNotSameTwice(), halfway, createVector(width/2, height/2),10, [renderTransparent(40)]);
+}
+
+function overshoot(n, r){
+  return new ChaosGame(nGonAnchors(n), randomSample2, ratioAction(r), createVector(width/2, height/2),40, [renderTransparent(40)]);
 }
 
 function draw() {
@@ -90,10 +101,10 @@ function nGonAnchors(n){
 
 // samplers
 function first(array){
-  if (array.length > 0) {
-      return array[0]
+  if (array.length == 0) {
+      throw exception("oh no")   
   }
-  throw exception("oh no")
+  return array[0]
 }
 
 function randomSample(array) {
@@ -103,6 +114,58 @@ function randomSample(array) {
   } 
   return random(array);
 }
+
+function randomSampleNotSameTwice(){
+  let inner = randomSampleWithRejectionRules([rejectSameTwice]);
+  console.log("inner",inner);
+  return inner;
+}
+
+// rejectionRules is an array of functions that return true if the rule is met - i.e. the choice must be disregarded.
+function randomSampleWithRejectionRules(rejectionRules) {
+
+  let sampler = function(array,history) {
+    let choices = array.length;
+    if (array.length < 0) {
+      throw "oh no";
+    }
+    let choice;
+    let retryCount = 0;
+    while (retryCount < MAX_REJECTIONS){
+      choice = random(array);
+      const rejections = rejectionRules.map((f)=>f(choice, history));
+      let rejected = !rejections.every((x)=>x==false);
+      if (!rejected){
+        break;
+      }
+      retryCount++;
+    }
+    return choice
+  }
+  return sampler
+}
+
+// rejectionRules
+function rejectSameTwice(choice,history){
+  if (history.length < 2) {
+    throw new Error("history is empty")
+  }
+  last = history[1];
+  return choice==last;
+}
+
+function rejectSameAsPenultimate(choice,history){
+  if (history.length < 1) {
+    throw new Error("history is empty")
+  }
+  penum = history[0];
+  return choice==penum;
+}
+
+function reject(choice, history){
+  return true
+}
+
 
 // actions. Make sure we pass these copied vals.
 function halfway(pos, target) {
@@ -115,8 +178,25 @@ function thirdways(pos, target) {
 
 function perfectAction(n){
   ratio = perfectRatio(n)
-  let action = function(pos, target){
+  return ratioAction(ratio);
+}
+
+function ratioAction(ratio){
+  return function(pos, target){
     return pos.add((target.sub(pos)).mult(ratio));
   }
-  return action
+}
+
+// render_setups
+
+function renderTransparent(v){
+  return function(){
+    stroke(0,0,0,v);
+    strokeWeight(1);  
+  }
+}
+
+function renderOpaque(){
+  stroke(0);
+  strokeWeight(1);
 }
