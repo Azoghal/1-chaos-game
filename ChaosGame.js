@@ -10,7 +10,8 @@
 // num_points : number of points to simulate per step
 // render_setups : a list of styling functions to call in order before calling point in each step.
 class ChaosGame {
-  constructor(anchors, sampler, action, start_pos, num_points, render_setups) {
+  constructor(graphics, anchors, sampler, action, start_pos, num_points, render_setups) {
+    this.g = graphics;
     this.anchors = anchors;
     this.anchorIndices = Array.from({ length: this.anchors.length }, (_, i) => i);
     this.sampler = sampler;
@@ -18,6 +19,7 @@ class ChaosGame {
     this.points = [];
     this.num_points = num_points;
     this.pointAnchorHistory = [];
+    this.baseColour = color(255,255,255);
     for (var pointIndex=0; pointIndex<this.num_points; pointIndex ++){
       this.pointAnchorHistory.push([random(this.anchorIndices), random(this.anchorIndices)]);
     }
@@ -40,7 +42,26 @@ class ChaosGame {
     
     this.stepCount = 0;
   }
+
+  refresh(){
+    this.g.clear();
+  }
+
+  setDarkMode(wantDark){
+    if (wantDark) {
+      this.baseColour = color(0,0,0);
+    } else {
+      this.baseColour = color(255,255,255);
+    }
+  }
+
+  invertColour(){
+    this.darkMode = !this.darkMode;
+    this.setDarkMode(this.darkMode)
+    this.g.filter(INVERT);
+  }
   
+  // draw anchors draws to the global buffer so we can control it from sketch
   drawAnchors(){
     stroke(150,20,20);
     strokeWeight(5);
@@ -52,7 +73,7 @@ class ChaosGame {
   // step the current point
   step() {
     for (var i=0;i<this.render_setups.length; i++){
-      this.render_setups[i]();
+      this.render_setups[i](this.g, this.baseColour);
     }
     
     for (i=0; i<this.num_points; i++){
@@ -61,7 +82,7 @@ class ChaosGame {
         this.pointAnchorHistory[i].push(newTargetAnchor); // push new target to end of list
         this.pointAnchorHistory[i].shift(); // remove oldest target from list
         let newPosition = this.action(this.points[i].copy(), newTarget.copy());
-        point(newPosition.x, newPosition.y);
+        this.g.point(newPosition.x, newPosition.y);
         this.points[i] = newPosition;
         
     }
@@ -73,20 +94,4 @@ class ChaosGame {
     this.stepCount += 1;
     
   }
-  
-  
-//   step_no_draw(addToHistory){
-//      for (var i=0; i<this.num_points; i++){
-//         let newTargetAnchor = this.sampler(this.anchorIndices, this.pointAnchorHistory[i]);
-//        console.log("new anchor",newTargetAnchor)
-//         let newTarget = this.anchors[newTargetAnchor];
-//        console.log("new target", newTarget)
-//         let newPosition = this.action(this.points[i].copy(), newTarget.copy());
-//         this.points[i] = newPosition;
-//        if (addToHistory) {
-//          this.pointAnchorHistory[i].push(newTarget);
-//        }
-//     }
-//   }
-
 }
