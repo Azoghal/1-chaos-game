@@ -8,6 +8,21 @@ let showAnchors;
 let backgroundColour;
 let foregroundColour;
 let g;
+let shapeNames = [
+	"void",
+	"Point",
+	"Line",
+	"Triangle",
+	"Square",
+	"Pentagon",
+	"Hexagon",
+	"Heptagon",
+	"Octagon",
+	"Nonagon",
+	"Decagon",
+	"Hendecagon",
+	"Dodecagon"]
+let gameName;
 
 function setup() {
 	createCanvas(600, 600);
@@ -20,10 +35,11 @@ function setup() {
 	showAnchors = true;
 	showInstructionsBump = true;
 	g = createGraphics(width,height);
+	gameName = ""
 	// chaosGame = sierpinski();
-	// chaosGame = overshoot(5,1.4);
-	chaosGame = ngonNoRepeat(g, 5)
-	// chaosGame = ngon(6);
+	chaosGame = overshoot(g,5,1.4);
+	// chaosGame = ngonNoRepeat(g, 5)
+	// chaosGame = ngon(g, 8);
 }
 
 
@@ -88,7 +104,7 @@ function title(){
 	noStroke()
 	textSize(10);
 	textAlign(CENTER);
-  	text("Pentagon. Step halfway. Can't pick same vertex consecutively", width/2, textY);
+  	text(gameName, width/2, textY);
 }
 
 function instructions(){
@@ -105,18 +121,20 @@ function sierpinski() {
 	return new ChaosGame(triangleAnchors(), randomSample, halfway, createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
 }
 
-function ngon(n) {
-	return new ChaosGame(nGonAnchors(n), randomSample, perfectAction(n), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+function ngon(g, n) {
+	const shapeName = shapeNames[n];
+	const stepSize = perfectRatio(n);
+	gameName = `${shapeName}. Perfect packing step (${stepSize}). Random sample.`
+	return new ChaosGame(g, nGonAnchors(n), randomSample, perfectAction(n), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
 
 function ngonNoRepeat(g, n) {
+	gameName = "Pentagon. Step halfway. Can't pick same vertex consecutively"
 	return new ChaosGame(g, nGonAnchors(n), randomSampleNotSameTwice(), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
-function overshoot(n, r) {
-	return new ChaosGame(nGonAnchors(n), randomSample2, ratioAction(r), createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
+function overshoot(g, n, r) {
+	gameName = `${shapeNames[n]}. Step past point (${r}). Random sample.`
+	return new ChaosGame(g, nGonAnchorsRadius(n,130), randomSample, ratioAction(r), createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
 }
-
-
-

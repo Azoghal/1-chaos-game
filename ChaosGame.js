@@ -43,6 +43,10 @@ class ChaosGame {
     this.stepCount = 0;
   }
 
+  name(){
+    return this.name
+  }
+
   refresh(){
     this.g.clear();
   }
