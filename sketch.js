@@ -58,6 +58,9 @@ function setup() {
 		overshoot(5,1.4,130),
 		overshoot(5,1.6,60),
 		overshoot1Point(5,2,1),
+		// fern()
+		// TODO starfish
+		// TODO fern
 	]
 
 	gameName = ""
@@ -121,7 +124,6 @@ function nextPreset(){
 		currentPresetIndex = 0;
 	}
 	chaosGame = presets[currentPresetIndex]
-	console.log(currentPresetIndex);
 }
 
 
@@ -178,6 +180,12 @@ function vicsek(){
 	const g = createGraphics(width,height);
 	const gName = `Vicsek: Square + centre anchor. 2/3 step. Random sample.`
 	return new ChaosGame(g, gName, squareWithCentreAnchors(40), randomSample, ratioAction(2/3), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+}
+
+function fern(){
+	const g = createGraphics(width,height);
+	const gName = `Barnsely Fern: see wiki. New position result of function chosen according to dist. f1 0.01  f2 0.85  f3 0.07  f4 0.07`
+	return new ChaosGame(g, gName, fernAnchors(), randomSample, fernAction, createVector(0,0), 1, [renderTransparent(255)]);
 }
 
 function ngon(n) {

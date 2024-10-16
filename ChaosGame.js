@@ -25,9 +25,7 @@ class ChaosGame {
     for (var pointIndex=0; pointIndex<this.num_points; pointIndex ++){
       this.pointAnchorHistory.unshift([random(this.anchorIndices), random(this.anchorIndices)]);
     }
-    
-    console.log(this.pointAnchorHistory);
-    
+        
     this.historyLength = 2;
     this.warmupLength = 3;
     this.render_setups = render_setups;
@@ -96,7 +94,6 @@ class ChaosGame {
     // text(this.stepCount, this.point.x, this.point.y)
     // circle(this.point.x, this.point.y, 10,10);
     // noStroke();
-    // console.log("stepping");
     this.stepCount += 1;
     
   }

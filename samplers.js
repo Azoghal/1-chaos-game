@@ -1,7 +1,7 @@
 // samplers
 function first(array) {
     if (array.length == 0) {
-        throw exception("oh no")
+        throw new Error("oh no")
     }
     return array[0]
 }
@@ -9,14 +9,35 @@ function first(array) {
 function randomSample(array) {
     let choices = array.length;
     if (array.length == 0) {
-        throw execption("oh no");
+        throw new Error("oh no");
     }
     return random(array);
 }
 
+function probabilitiesSample(probabilities){
+    const total = probabilities.reduce(function(acc, v){return acc+v})
+    if (total != 1) {
+        throw new Error("oh no")
+    } 
+    return function(array) {
+        if (array.length != probabilities.length){
+            throw new Error("oh no")
+        }
+        const r = random()
+        let seenSoFar = 0;
+        for (var ppp = 0; ppp < probabilities.length; ppp+=1) {
+            const checkLessThan = probabilities[ppp] + seenSoFar 
+            if (r < (checkLessThan)){
+                return array[ppp]
+            }
+            seenSoFar += probabilities[ppp]
+        }
+        throw new Error("wasn't expecting to get this far")
+    }
+}
+
 function randomSampleNotSameTwice() {
     let inner = randomSampleWithRejectionRules([rejectSameTwice]);
-    console.log("inner", inner);
     return inner;
 }
 

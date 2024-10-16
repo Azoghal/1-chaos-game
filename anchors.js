@@ -66,3 +66,12 @@ function nGonAnchorsRadius(n, radius){
 
     return anchors;
 }
+
+function fernAnchors(){
+    return [
+        createVector(0,0,0),
+        createVector(0,0,1),
+        createVector(0,0,2),
+        createVector(0,0,3),
+    ]
+}
