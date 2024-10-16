@@ -2,6 +2,8 @@
 // anchor sets we can choose from
 // these can actually be functions of width and height
 
+// STANDARD = we defeine points anti clockwise starting from right, vector 1,0, as with radians
+
 // just one point
 function onePoint() {
     return [createVector(width - 10, height - 10)];
@@ -14,19 +16,22 @@ function triangleAnchors() {
     const bottom = height - padding;
     const bottom_left = createVector((width / 2) - (vert / tan(60)), bottom);
     const bottom_right = createVector((width / 2) + (vert / tan(60)), bottom);
-    return [bottom_left, top, bottom_right];
+    return [top, bottom_left,bottom_right,];
 }
 
 
 function squareAnchors(padding){
-    const one = createVector(padding,padding);
-    const two = createVector(width-padding,padding);
-    const three = createVector(width-padding,height-padding);
-    const four = createVector(padding, height-padding);
+    const one = createVector(width-padding,padding);
+    const two = createVector(padding,padding);
+    const three = createVector(padding, height-padding);
+    const four = createVector(width-padding,height-padding);
     return [one,two,three,four]
 }
 
 function nGonAnchors(n) {
+    if (n==4){
+        return squareAnchors(40);
+    }
     return nGonAnchorsRadius(n, (width/2) - 50);
 }
 

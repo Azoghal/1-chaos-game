@@ -21,8 +21,9 @@ class ChaosGame {
     this.num_points = num_points;
     this.pointAnchorHistory = [];
     this.baseColour = color(255,255,255);
+    // TODO this doesn't pay attention to rejection rules
     for (var pointIndex=0; pointIndex<this.num_points; pointIndex ++){
-      this.pointAnchorHistory.push([random(this.anchorIndices), random(this.anchorIndices)]);
+      this.pointAnchorHistory.unshift([random(this.anchorIndices), random(this.anchorIndices)]);
     }
     
     console.log(this.pointAnchorHistory);
@@ -84,8 +85,8 @@ class ChaosGame {
     for (i=0; i<this.num_points; i++){
         let newTargetAnchor = this.sampler(this.anchorIndices, this.pointAnchorHistory[i]);
         let newTarget = this.anchors[newTargetAnchor];
-        this.pointAnchorHistory[i].push(newTargetAnchor); // push new target to end of list
-        this.pointAnchorHistory[i].shift(); // remove oldest target from list
+        this.pointAnchorHistory[i].unshift(newTargetAnchor); // push new target to end of list
+        this.pointAnchorHistory[i].pop(); // remove oldest target from list
         let newPosition = this.action(this.points[i].copy(), newTarget.copy());
         this.g.point(newPosition.x, newPosition.y);
         this.points[i] = newPosition;

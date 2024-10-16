@@ -47,8 +47,9 @@ function setup() {
 		ngon(g, 8),
 		ngon(g, 9),
 		ngon(g, 10),
+		ngonNoRepeat(g, 4),
 		ngonNoRepeat(g, 5),
-		squareNoRepeat(g, 40),
+		ngonNotAntiClockwise(g,4),
 		overshoot(g,5,1.4,130),
 		overshoot(g,5,1.6,60),
 		overshoot1Point(g,5,2,1),
@@ -169,10 +170,11 @@ function ngonNoRepeat(g, n) {
 	return new ChaosGame(g, gName, nGonAnchors(n), randomSampleNotSameTwice(), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
-function squareNoRepeat(g, padding) {
-	const gName = `${shapeNames[4]}. Step halfway. Can't pick same vertex consecutively`
-	return new ChaosGame(g, gName, squareAnchors(padding), randomSampleNotSameTwice(), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+function ngonNotAntiClockwise(g,n){
+	const gName = `${shapeNames[n]}. Step halfway. Can't pick vertex anticlockwise of previous point.`
+	return new ChaosGame(g, gName, nGonAnchors(n), randomSampleWithRejectionRules([rejectAntiClockwiseInNgon(n)]), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
+
 
 function overshoot(g, n, r, radius) {
 	const gName = `${shapeNames[n]}. Step past point (${r}). Random sample.`
