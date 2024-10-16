@@ -10,8 +10,9 @@
 // num_points : number of points to simulate per step
 // render_setups : a list of styling functions to call in order before calling point in each step.
 class ChaosGame {
-  constructor(graphics, anchors, sampler, action, start_pos, num_points, render_setups) {
+  constructor(graphics, name, anchors, sampler, action, start_pos, num_points, render_setups) {
     this.g = graphics;
+    this.name = name;
     this.anchors = anchors;
     this.anchorIndices = Array.from({ length: this.anchors.length }, (_, i) => i);
     this.sampler = sampler;

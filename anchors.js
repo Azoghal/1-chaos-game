@@ -17,6 +17,15 @@ function triangleAnchors() {
     return [bottom_left, top, bottom_right];
 }
 
+
+function squareAnchors(padding){
+    const one = createVector(padding,padding);
+    const two = createVector(width-padding,padding);
+    const three = createVector(width-padding,height-padding);
+    const four = createVector(padding, height-padding);
+    return [one,two,three,four]
+}
+
 function nGonAnchors(n) {
     return nGonAnchorsRadius(n, (width/2) - 50);
 }

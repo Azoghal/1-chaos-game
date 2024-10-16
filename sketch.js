@@ -24,6 +24,9 @@ let shapeNames = [
 	"Dodecagon"]
 let gameName;
 
+let presets;
+let currentPresetIndex;
+
 function setup() {
 	createCanvas(600, 600);
 	angleMode(DEGREES)
@@ -35,11 +38,25 @@ function setup() {
 	showAnchors = true;
 	showInstructionsBump = true;
 	g = createGraphics(width,height);
+
+	presets = [
+		sierpinski(g),
+		ngon(g, 5),
+		ngon(g, 6),
+		ngon(g, 7),
+		ngon(g, 8),
+		ngon(g, 9),
+		ngon(g, 10),
+		ngonNoRepeat(g, 5),
+		squareNoRepeat(g, 40),
+		overshoot(g,5,1.4,130),
+		overshoot(g,5,1.6,60),
+		overshoot1Point(g,5,2,1),
+	]
+
 	gameName = ""
-	// chaosGame = sierpinski();
-	chaosGame = overshoot(g,5,1.4);
-	// chaosGame = ngonNoRepeat(g, 5)
-	// chaosGame = ngon(g, 8);
+	chaosGame = presets[0]
+	currentPresetIndex = 0
 }
 
 
@@ -69,10 +86,10 @@ function update() {
 function keyPressed(){
 	if (keyCode === RIGHT_ARROW){
 		refresh = true
-		console.log("go to next!")
+		nextPreset();
 	} else if (keyCode === LEFT_ARROW){
 		refresh = true
-		console.log("go to previous!")
+		previousPreset();
 	}
 
 	if (key==='r') {
@@ -86,6 +103,24 @@ function keyPressed(){
 		setBackgroundColour(darkMode)
 		chaosGame.invertColour();
 	}
+}
+
+function nextPreset(){
+	currentPresetIndex += 1
+	if (currentPresetIndex >= presets.length){
+		currentPresetIndex = 0;
+	}
+	chaosGame = presets[currentPresetIndex]
+	console.log(currentPresetIndex);
+}
+
+
+function previousPreset(){
+	currentPresetIndex -= 1
+	if (currentPresetIndex <= 0){
+		currentPresetIndex = presets.length-1;
+	}
+	chaosGame = presets[currentPresetIndex]
 }
 
 function setBackgroundColour(darkmode) {
@@ -104,7 +139,7 @@ function title(){
 	noStroke()
 	textSize(10);
 	textAlign(CENTER);
-  	text(gameName, width/2, textY);
+  	text(chaosGame.name, width/2, textY);
 }
 
 function instructions(){
@@ -117,24 +152,34 @@ function instructions(){
 }
 
 // sierpinski triangle
-function sierpinski() {
-	return new ChaosGame(triangleAnchors(), randomSample, halfway, createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
+function sierpinski(g) {
+	const gName = "Classic chaos game. Triangle. Step halfway. Random sample."
+	return new ChaosGame(g, gName, triangleAnchors(), randomSample, halfway, createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
 }
 
 function ngon(g, n) {
-	const shapeName = shapeNames[n];
 	const stepSize = perfectRatio(n);
-	gameName = `${shapeName}. Perfect packing step (${stepSize}). Random sample.`
-	return new ChaosGame(g, nGonAnchors(n), randomSample, perfectAction(n), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+	const gName = `${shapeNames[n]}. Perfect packing step (${stepSize}). Random sample.`
+	return new ChaosGame(g, gName, nGonAnchors(n), randomSample, perfectAction(n), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
 
 function ngonNoRepeat(g, n) {
-	gameName = "Pentagon. Step halfway. Can't pick same vertex consecutively"
-	return new ChaosGame(g, nGonAnchors(n), randomSampleNotSameTwice(), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+	const gName = `${shapeNames[n]}. Step halfway. Can't pick same vertex consecutively`
+	return new ChaosGame(g, gName, nGonAnchors(n), randomSampleNotSameTwice(), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
-function overshoot(g, n, r) {
-	gameName = `${shapeNames[n]}. Step past point (${r}). Random sample.`
-	return new ChaosGame(g, nGonAnchorsRadius(n,130), randomSample, ratioAction(r), createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
+function squareNoRepeat(g, padding) {
+	const gName = `${shapeNames[4]}. Step halfway. Can't pick same vertex consecutively`
+	return new ChaosGame(g, gName, squareAnchors(padding), randomSampleNotSameTwice(), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+}
+
+function overshoot(g, n, r, radius) {
+	const gName = `${shapeNames[n]}. Step past point (${r}). Random sample.`
+	return new ChaosGame(g, gName, nGonAnchorsRadius(n,radius), randomSample, ratioAction(r), createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
+}
+
+function overshoot1Point(g, n, r, radius) {
+	const gName = `${shapeNames[n]}. Step past point (${r}). Random sample.`
+	return new ChaosGame(g, gName, nGonAnchorsRadius(n,radius), randomSample, ratioAction(r), createVector(width / 2, height / 2), 1, [renderTransparent(40)]);
 }
