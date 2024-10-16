@@ -28,6 +28,24 @@ function squareAnchors(padding){
     return [one,two,three,four]
 }
 
+function squareWithCentreAnchors(padding){
+    const corners = squareAnchors(padding)
+    const centre = createVector(width/2,height/2);
+    return [centre, ...corners]
+}
+
+function squareWithMidpointAnchors(padding){
+    const one = createVector(width-padding,padding);
+    const onem = createVector(width/2, padding);
+    const two = createVector(padding,padding);
+    const twom = createVector(padding,height/2);
+    const three = createVector(padding, height-padding);
+    const threem = createVector(width/2, height-padding);
+    const four = createVector(width-padding,height-padding);
+    const fourm = createVector(width-padding, height/2);
+    return [one, onem, two, twom, three, threem, four, fourm]
+}
+
 function nGonAnchors(n) {
     if (n==4){
         return squareAnchors(40);

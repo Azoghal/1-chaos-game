@@ -1,5 +1,6 @@
 let chaosGame;
 let refresh;
+let wipeScreen;
 let darkMode;
 let MAX_REJECTIONS = 100;
 let showInstructions;
@@ -7,7 +8,6 @@ let showInstructionsBump;
 let showAnchors;
 let backgroundColour;
 let foregroundColour;
-let g;
 let shapeNames = [
 	"void",
 	"Point",
@@ -31,28 +31,33 @@ function setup() {
 	createCanvas(600, 600);
 	angleMode(DEGREES)
 	refresh = false;
+	wipeScreen = false;
 	darkMode = true; // base this on time
 	backgroundColour = color(0);
 	foregroundColour = color(255);
 	showInstructions = true;
 	showAnchors = true;
 	showInstructionsBump = true;
-	g = createGraphics(width,height);
 
 	presets = [
-		sierpinski(g),
-		ngon(g, 5),
-		ngon(g, 6),
-		ngon(g, 7),
-		ngon(g, 8),
-		ngon(g, 9),
-		ngon(g, 10),
-		ngonNoRepeat(g, 4),
-		ngonNoRepeat(g, 5),
-		ngonNotAntiClockwise(g,4),
-		overshoot(g,5,1.4,130),
-		overshoot(g,5,1.6,60),
-		overshoot1Point(g,5,2,1),
+		sierpinski(),
+		vicsek(),
+		menger(),
+		ngon(5),
+		ngon(6),
+		ngon(7),
+		ngon(8),
+		ngon(9),
+		ngon(10),
+		ngonNoRepeat(4),
+		ngonNoRepeat(5),
+		ngonNotNeighbourIfLastTwoSame(4),
+		ngonNotNeighbourIfLastTwoSame(5),
+		ngonNotAntiClockwise(4),
+		ngonNotOpposite(4),
+		overshoot(5,1.4,130),
+		overshoot(5,1.6,60),
+		overshoot1Point(5,2,1),
 	]
 
 	gameName = ""
@@ -63,13 +68,17 @@ function setup() {
 
 function draw() {
 	background(backgroundColour);
+	if (wipeScreen){
+		background(backgroundColour);
+		wipeScreen = false;
+	}
 	if (refresh) {
 		chaosGame.refresh();
 		refresh = false;
 	}
 	update();
 	
-	image(g, 0,0)
+	image(chaosGame.g, 0,0)
 	if (showAnchors){
 		chaosGame.drawAnchors()
 	}
@@ -86,10 +95,10 @@ function update() {
 
 function keyPressed(){
 	if (keyCode === RIGHT_ARROW){
-		refresh = true
+		wipeScreen = true
 		nextPreset();
 	} else if (keyCode === LEFT_ARROW){
-		refresh = true
+		wipeScreen = true
 		previousPreset();
 	}
 
@@ -118,7 +127,7 @@ function nextPreset(){
 
 function previousPreset(){
 	currentPresetIndex -= 1
-	if (currentPresetIndex <= 0){
+	if (currentPresetIndex < 0){
 		currentPresetIndex = presets.length-1;
 	}
 	chaosGame = presets[currentPresetIndex]
@@ -153,35 +162,67 @@ function instructions(){
 }
 
 // sierpinski triangle
-function sierpinski(g) {
-	const gName = "Classic chaos game. Triangle. Step halfway. Random sample."
+function sierpinski() {
+	const g = createGraphics(width,height);
+	const gName = "Sierpisnki: Classic chaos game. Triangle. Step halfway. Random sample."
 	return new ChaosGame(g, gName, triangleAnchors(), randomSample, halfway, createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
 }
 
-function ngon(g, n) {
+function menger(){
+	const g = createGraphics(width,height);
+	const gName = `Menger: Square + midpoint anchors. 2/3 step. Random sample.`
+	return new ChaosGame(g, gName, squareWithMidpointAnchors(40), randomSample, ratioAction(2/3), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+}
+
+function vicsek(){
+	const g = createGraphics(width,height);
+	const gName = `Vicsek: Square + centre anchor. 2/3 step. Random sample.`
+	return new ChaosGame(g, gName, squareWithCentreAnchors(40), randomSample, ratioAction(2/3), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+}
+
+function ngon(n) {
+	const g = createGraphics(width,height);
 	const stepSize = perfectRatio(n);
 	const gName = `${shapeNames[n]}. Perfect packing step (${stepSize}). Random sample.`
 	return new ChaosGame(g, gName, nGonAnchors(n), randomSample, perfectAction(n), createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
 
-function ngonNoRepeat(g, n) {
+function ngonNoRepeat(n) {
+	const g = createGraphics(width,height);
 	const gName = `${shapeNames[n]}. Step halfway. Can't pick same vertex consecutively`
 	return new ChaosGame(g, gName, nGonAnchors(n), randomSampleNotSameTwice(), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
-function ngonNotAntiClockwise(g,n){
+
+function ngonNotNeighbourIfLastTwoSame(n) {
+	const g = createGraphics(width,height);
+	const gName = `${shapeNames[n]}. Step halfway. Can't pick neighbour if last two were the same.`
+	return new ChaosGame(g, gName, nGonAnchors(n), randomSampleWithRejectionRules([rejectNeighbourIfLastTwoSame(n)]), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+}
+
+function ngonNotAntiClockwise(n){
+	const g = createGraphics(width,height);
 	const gName = `${shapeNames[n]}. Step halfway. Can't pick vertex anticlockwise of previous point.`
 	return new ChaosGame(g, gName, nGonAnchors(n), randomSampleWithRejectionRules([rejectAntiClockwiseInNgon(n)]), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
 }
 
+// only really works for even n
+function ngonNotOpposite(n) {
+	const g = createGraphics(width,height);
+	const gName = `${shapeNames[n]}. Step halfway. Can't pick ${n/2} away from previous point.`
+	return new ChaosGame(g, gName, nGonAnchors(n), randomSampleWithRejectionRules([rejecCertainNeighboursInNgon(n, [n/2])]), halfway, createVector(width / 2, height / 2), 10, [renderTransparent(40)]);
+}
 
-function overshoot(g, n, r, radius) {
+function overshoot(n, r, radius) {
+	const g = createGraphics(width,height);
 	const gName = `${shapeNames[n]}. Step past point (${r}). Random sample.`
 	return new ChaosGame(g, gName, nGonAnchorsRadius(n,radius), randomSample, ratioAction(r), createVector(width / 2, height / 2), 40, [renderTransparent(40)]);
 }
 
-function overshoot1Point(g, n, r, radius) {
+function overshoot1Point(n, r, radius) {
+	const g = createGraphics(width,height);
 	const gName = `${shapeNames[n]}. Step past point (${r}). Random sample.`
 	return new ChaosGame(g, gName, nGonAnchorsRadius(n,radius), randomSample, ratioAction(r), createVector(width / 2, height / 2), 1, [renderTransparent(40)]);
 }
+
