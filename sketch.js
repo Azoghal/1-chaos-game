@@ -32,9 +32,9 @@ function setup() {
 	angleMode(DEGREES)
 	refresh = false;
 	wipeScreen = false;
-	darkMode = true; // base this on time
-	backgroundColour = color(0);
-	foregroundColour = color(255);
+	darkMode = false; // base this on time
+	backgroundColour = color(255);
+	foregroundColour = color(0);
 	showInstructions = true;
 	showAnchors = true;
 	showInstructionsBump = true;
@@ -112,28 +112,32 @@ function keyPressed(){
 	} else if (key == 'a'){
 		showAnchors = !showAnchors
 	} else if (key == 't'){
-		darkMode = !darkMode
-		setBackgroundColour(darkMode)
-		chaosGame.invertColour();
+		darkMode = !darkMode;
+		setBackgroundColour(darkMode);
+		chaosGame.setDarkMode(darkMode);
 	}
 }
 
 function nextPreset(){
-	currentPresetIndex += 1
+	moveInPresets(1)
+}
+
+function previousPreset(){
+	moveInPresets(-1)
+}
+
+function moveInPresets(offset){
+	currentPresetIndex+=offset;
 	if (currentPresetIndex >= presets.length){
 		currentPresetIndex = 0;
 	}
-	chaosGame = presets[currentPresetIndex]
-}
-
-
-function previousPreset(){
-	currentPresetIndex -= 1
 	if (currentPresetIndex < 0){
 		currentPresetIndex = presets.length-1;
 	}
 	chaosGame = presets[currentPresetIndex]
+	chaosGame.setDarkMode(darkMode)
 }
+
 
 function setBackgroundColour(darkmode) {
 	if (darkmode){

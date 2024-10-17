@@ -20,7 +20,8 @@ class ChaosGame {
     this.points = [];
     this.num_points = num_points;
     this.pointAnchorHistory = [];
-    this.baseColour = color(255,255,255);
+    this.darkMode = false;
+    this.setColours(false);
     // TODO this doesn't pay attention to rejection rules
     for (var pointIndex=0; pointIndex<this.num_points; pointIndex ++){
       this.pointAnchorHistory.unshift([random(this.anchorIndices), random(this.anchorIndices)]);
@@ -51,18 +52,21 @@ class ChaosGame {
     this.g.clear();
   }
 
-  setDarkMode(wantDark){
+  setColours(wantDark){
     if (wantDark) {
-      this.baseColour = color(0,0,0);
+      this.foregroundColour = color(255,255,255);
     } else {
-      this.baseColour = color(255,255,255);
+      this.foregroundColour = color(0,0,0);
     }
   }
 
-  invertColour(){
-    this.darkMode = !this.darkMode;
-    this.setDarkMode(this.darkMode)
-    this.g.filter(INVERT);
+  setDarkMode(dm){
+    const lastMode = this.darkMode
+    this.darkMode = dm;
+    this.setColours(this.darkMode)
+    if (lastMode != this.darkMode){
+      this.g.filter(INVERT);
+    }
   }
   
   // draw anchors draws to the global buffer so we can control it from sketch
@@ -77,7 +81,7 @@ class ChaosGame {
   // step the current point
   step() {
     for (var i=0;i<this.render_setups.length; i++){
-      this.render_setups[i](this.g, this.baseColour);
+      this.render_setups[i](this.g, this.foregroundColour);
     }
     
     for (i=0; i<this.num_points; i++){
